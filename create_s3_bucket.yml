@@ -1,0 +1,7 @@
+---
+Resources:
+  krishna26_bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+        region: us-east-1
+     
