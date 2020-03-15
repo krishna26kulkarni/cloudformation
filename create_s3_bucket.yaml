@@ -2,5 +2,6 @@
 Resources:
   krishna26bucket:
     Type: AWS::S3::Bucket
-    Properties: {}
+    Properties:
+      AccessControl: PublicRead
      
