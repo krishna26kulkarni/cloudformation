@@ -2,7 +2,7 @@ Parameters:
   InstanceType:
     Description: This is the ec2 instance Type
     Type: String
-    AlloweValues:
+    AllowedValues:
       - t2.micro
       - t2.small
   AZs:
