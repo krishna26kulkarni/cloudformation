@@ -1,19 +1,37 @@
+Parameters:
+  InstanceType:
+    Description: This is the ec2 instance Type
+    Type: String
+    AlloweValues:
+      - t2.micro
+      - t2.small
+  AZs:
+    Description: Available AZs in the Region
+    Type: "List<!GetAZs AWS::Region>"
+  cider:
+    Description: CIDR range for security group ingress rules
+    Type: String
+  IngressPorts:
+    Description: Ports and ranges
+    Type: Number
+    MinValue: 1024
+    MaxValue: 65535
 Resources:
    myec2:
       Type: AWS::EC2::Instance
       Properties:
          ImageId: ami-0ff8a91507f77f867
-         InstanceType: t2.micro
-         AvailabilityZone: us-east-1a
+         InstanceType: !Ref InstanceType
+         AvailabilityZone: !Ref AZs
          KeyName: office_aws
          SecurityGroupIds:
              - !GetAtt ec2securitygroup.GroupId
          Tags:
-           - 
+           -
              Key: Env
              Value: Dev
          UserData:
-           Fn::Base64: !Sub | 
+           Fn::Base64: !Sub |
              #!/bin/bash -xe
              yum -y install httpd
              echo "<html><h1>This is my test web page in ${AWS::Region}!!</h1></html>" > /var/www/html/index.html
@@ -26,16 +44,15 @@ Resources:
          VpcId: vpc-f33c1b89
          GroupDescription: SG for web servers
          SecurityGroupIngress:
-         - CidrIp: 0.0.0.0/0
-           FromPort: 22
+         - CidrIp: !Ref cider
+           FromPort: !Ref IngressPorts
            IpProtocol: tcp
-           ToPort: 22
-         - CidrIp: 0.0.0.0/0
-           FromPort: 80
+           ToPort:
+         - CidrIp: !Ref cider
+           FromPort: !Ref IngressPorts
            IpProtocol: tcp
-           ToPort: 80
-         - CidrIp: 0.0.0.0/0
-           FromPort: 443
+           ToPort: !Ref IngressPorts
+         - CidrIp: !Ref cider
+           FromPort: !Ref IngressPorts
            IpProtocol: tcp
-           ToPort: 443
-      
+           ToPort: !Ref IngressPorts
