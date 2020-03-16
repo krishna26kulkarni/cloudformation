@@ -10,15 +10,15 @@ Parameters:
       - t2.small
   AZs:
     Description: Available AZs in the Region
-    Type: "List<!GetAZs !Ref Region>"
+    Type: AWS::EC2::AvailabilityZone::Name
   cider:
     Description: CIDR range for security group ingress rules
     Type: String
   IngressPorts:
     Description: Ports and ranges
     Type: Number
-    MinValue: 1024
-    MaxValue: 65535
+    MinValue: 22
+    MaxValue: 1024
 Resources:
    myec2:
       Type: AWS::EC2::Instance
