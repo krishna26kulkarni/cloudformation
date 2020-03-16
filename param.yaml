@@ -6,7 +6,8 @@ Resources:
          InstanceType: t2.micro
          AvailabilityZone: us-east-1a
          KeyName: office_aws
-         SecurityGroups: !Ref ec2securitygroup
+         SecurityGroups: 
+           - !Ref ec2securitygroup
          Tags:
            - 
              Key: Env
