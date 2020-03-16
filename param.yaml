@@ -16,7 +16,7 @@ Resources:
            Fn::Base64: !Sub | 
              #!/bin/bash -xe
              yum -y install httpd
-             echo "<html><h1>This is my test web page !!</h1></html>" > /var/www/html/index.html
+             echo "<html><h1>This is my test web page in ${AWS::Region}!!</h1></html>" > /var/www/html/index.html
              service httpd restart
              chkconfig httpd on
 
