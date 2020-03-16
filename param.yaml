@@ -4,7 +4,7 @@ Resources:
       Properties:
          ImageId: ami-0ff8a91507f77f867
          InstanceType: t2.micro
-         VpcId: vpc-f33c1b89
+         AvailabilityZone: us-east-1a
          KeyName: office_aws
          SecurityGroups: !Ref ec2securitygroup
          Tags:
