@@ -47,7 +47,7 @@ Resources:
          - CidrIp: !Ref cider
            FromPort: !Ref IngressPorts
            IpProtocol: tcp
-           ToPort:
+           ToPort: !Ref IngressPorts
          - CidrIp: !Ref cider
            FromPort: !Ref IngressPorts
            IpProtocol: tcp
