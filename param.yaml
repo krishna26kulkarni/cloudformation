@@ -11,6 +11,14 @@ Resources:
            - 
              Key: Env
              Value: Dev
+         UserData:
+         Fn::Base64: !Sub |
+           #!/bin/bash -xe
+           yum -y install httpd
+           echo "<html><h1>This is my test web page !!</h1></html>" > /var/www/html/index.html
+           systemctl restart httpd
+           systemctl enable httpd
+
    ec2securitygroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
@@ -28,10 +36,4 @@ Resources:
            FromPort: 443
            IpProtocol: tcp
            ToPort: 443
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash -xe
-          yum -y install httpd
-          echo "<html><h1>This is my test web page !!</h1></html>" > /var/www/html/index.html
-          systemctl restart httpd
-          systemctl enable httpd
+      
