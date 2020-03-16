@@ -6,21 +6,19 @@ Resources:
          InstanceType: t2.micro
          AvailabilityZone: us-east-1a
          KeyName: office_aws
-         SecurityGroups: 
-           - !Ref ec2securitygroup
          SecurityGroupIds:
-           - !GetAtt ec2securitygroup.GroupId
+             - !GetAtt ec2securitygroup.GroupId
          Tags:
            - 
              Key: Env
              Value: Dev
          UserData:
-           Fn::Base64: !Sub |
+           Fn::Base64: !Sub | 
              #!/bin/bash -xe
              yum -y install httpd
              echo "<html><h1>This is my test web page !!</h1></html>" > /var/www/html/index.html
-             systemctl restart httpd
-             systemctl enable httpd
+             service httpd restart
+             chkconfig httpd on
 
    ec2securitygroup:
       Type: AWS::EC2::SecurityGroup
