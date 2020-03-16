@@ -32,7 +32,7 @@ Resources:
            FromPort: 80
            IpProtocol: tcp
            ToPort: 80
-         - CidrIP: 0.0.0.0/0
+         - CidrIp: 0.0.0.0/0
            FromPort: 443
            IpProtocol: tcp
            ToPort: 443
