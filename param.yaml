@@ -21,6 +21,7 @@ Resources:
 
    ec2securitygroup:
       Type: AWS::EC2::SecurityGroup
+      GroupDescription: SG for web servers
       Properties:
          VpcId: vpc-f33c1b89
          SecurityGroupIngress:
