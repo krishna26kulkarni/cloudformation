@@ -8,6 +8,8 @@ Resources:
          KeyName: office_aws
          SecurityGroups: 
            - !Ref ec2securitygroup
+         SecurityGroupIds:
+           - !Ref ec2securitygroup
          Tags:
            - 
              Key: Env
