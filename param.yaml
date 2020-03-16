@@ -1,0 +1,37 @@
+Resources:
+   myec2:
+      Type: AWS::EC2::Instance
+      Properties:
+         ImageId: ami-0ff8a91507f77f867
+         InstanceType: t2.micro
+         VpcId: vpc-f33c1b89
+         KeyName: office_aws
+         SecurityGroups: !Ref ec2securitygroup
+         Tags:
+           - 
+             Key: Env
+             Value: Dev
+   ec2securitygroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+         VpcId: vpc-f33c1b89
+         SecurityGroupIngress:
+         - CidrIp: 0.0.0.0/0
+           FromPort: 22
+           IpProtocol: tcp
+           ToPort: 22
+         - CidrIp: 0.0.0.0/0
+           FromPort: 80
+           IpProtocol: tcp
+           ToPort: 80
+         - CidrIP: 0.0.0.0/0
+           FromPort: 443
+           IpProtocol: tcp
+           ToPort: 443
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum -y install httpd
+          echo "<html><h1>This is my test web page !!</h1></html>" > /var/www/html/index.html
+          systemctl restart httpd
+          systemctl enable httpd
