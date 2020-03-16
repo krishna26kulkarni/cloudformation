@@ -1,4 +1,7 @@
 Parameters:
+  Region:
+    Description: Region for infra creation
+    Type: String
   InstanceType:
     Description: This is the ec2 instance Type
     Type: String
@@ -7,7 +10,7 @@ Parameters:
       - t2.small
   AZs:
     Description: Available AZs in the Region
-    Type: "List<!GetAZs AWS::Region>"
+    Type: "List<!GetAZs !Ref Region>"
   cider:
     Description: CIDR range for security group ingress rules
     Type: String
