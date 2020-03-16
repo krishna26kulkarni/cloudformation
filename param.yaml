@@ -9,7 +9,7 @@ Resources:
          SecurityGroups: 
            - !Ref ec2securitygroup
          SecurityGroupIds:
-           - !Ref ec2securitygroup
+           - !GetAtt ec2securitygroup.GroupId
          Tags:
            - 
              Key: Env
