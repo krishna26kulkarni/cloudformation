@@ -4,8 +4,7 @@ Mappings:
       "HVM64": "ami-0ff8a91507f77f867"
     us-west-1:
       "HVM64": "ami-a0cfeed8"
-
- Resources:
+Resources:
    myec2:
      Type: AWS::EC2::Instance
      Properties:
