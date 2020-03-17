@@ -1,0 +1,16 @@
+Mappings:
+  amis:
+    us-east-1:
+      "HVM64": "ami-0ff8a91507f77f867"
+    us-west-1:
+      "HVM64": "ami-a0cfeed8"
+
+ Resources:
+   myec2:
+     Type: AWS::EC2::Instance
+     Properties:
+       InstanceType: t2.micro
+       ImageId: !FindInMap [amis, !Ref "AWS::Region", HVM64]
+       SecurityGroupIds:
+         - sg-04b843fc7321418cb
+       KeyName: office_aws
