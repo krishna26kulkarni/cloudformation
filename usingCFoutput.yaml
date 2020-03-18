@@ -1,6 +1,5 @@
 Resources:
   ec2eip:
-    Type: AWS::EC2:EIP
+    Type: AWS::EC2::EIP
     Properties:
-      InstanceId: !Ref myec2instanceid
-      
+      InstanceId: !ImportValue myec2instanceid
