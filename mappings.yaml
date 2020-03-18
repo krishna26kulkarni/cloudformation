@@ -13,3 +13,9 @@ Resources:
        SecurityGroupIds:
          - sg-04b843fc7321418cb
        KeyName: office_aws
+Outputs:
+  ec2instanceid:
+    Description: This is ec2 instance id
+    Value: !Ref myec2
+    Export:
+      Name: myec2instanceid
