@@ -1,0 +1,39 @@
+Parameters:
+  envType:
+    Description: IT Infra Environment for the Stack deployment
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+      - qa
+  AZ:
+    Description: AZ for EC2 Instance
+    Type: String
+Conditions:
+  etype: !Equals [ !Ref envType, prod ]
+
+Resources:
+  myec2:
+    Type: AWS::EC2::Instance
+    Condition: etype
+    Properties:
+      ImageId: ami-0ff8a91507f77f867
+      SecurityGroupIds:
+        - !GetAtt mysg.GroupId
+      AvailabilityZone: !Ref AZ
+      InstanceType: t2.micro
+  mysg:
+    Type: AWS::EC2::SecurityGroup
+    Condition: etype
+    Properties:
+      VpcId: vpc-f33c1b89
+      GroupDescription: SG for app servers
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      - CidrIp: 0.0.0.0/0
+        FromPort: 443
+        IpProtocol: tcp
+        ToPort: 443
