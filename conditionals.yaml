@@ -6,9 +6,7 @@ Parameters:
       - dev
       - prod
       - qa
-  AZ:
-    Description: AZ for EC2 Instance
-    Type: String
+
 Conditions:
   etype: !Equals [ !Ref envType, prod ]
 
@@ -20,7 +18,9 @@ Resources:
       ImageId: ami-0ff8a91507f77f867
       SecurityGroupIds:
         - !GetAtt mysg.GroupId
-      AvailabilityZone: !Ref AZ
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
       InstanceType: t2.micro
   mysg:
     Type: AWS::EC2::SecurityGroup
