@@ -27,7 +27,7 @@ Resources:
   mysg:
     Type: AWS::EC2:SecurityGroup
     Properties:
-      VpcId:
+      VpcId: vpc-f33c1b89
       GroupDescription: my SG for web servers
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
