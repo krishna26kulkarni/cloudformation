@@ -20,7 +20,7 @@ Resources:
                 ensureRunning: 'true'
     Properties:
       ImageId: ami-0ff8a91507f77f867
-      KeyName: Office_aws
+      KeyName: office_aws
       InstanceType: t2.micro
       SecurityGroupIds:
         - !GetAtt mysg.GroupId
