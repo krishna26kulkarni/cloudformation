@@ -1,0 +1,40 @@
+Resources:
+  myec2:
+    Type: AWS::EC2::Instance
+    Metadata:
+      Comment: Install Apache server
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+            yum:
+              httpd: []
+          files:
+            "/var/www/html/index.html":
+              content: |
+                <html><h1>This webserver is created using cfn-init</h1></html>
+              mode: '000644'
+          services:
+            sysvinit:
+              httpd:
+                enabled: 'true'
+                ensureRunning: 'true'
+    Properties:
+      ImageId: ami-0ff8a91507f77f867
+      KeyName: Office_aws
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - !GetAtt mysg.GroupId
+  mysg:
+    Type: AWS::EC2:SecurityGroup
+    Properties:
+      VpcId:
+      GroupDescription: my SG for web servers
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
