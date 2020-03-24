@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  myvpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: 'true'
+      EnableDnsSupport: 'true'
+  sub1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myvpc
+      AvailabilityZone: 'Fn::GetAZs: "AWS::Region"'
+      CidrBlock: 10.0.1.0/16
+      MapPublicIpOnLaunch: 'true'
+  sub2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myvpc
+      AvailabilityZone: 'Fn::GetAZs: "AWS::Region"'
+      CidrBlock: 10.0.2.0/16
+      MapPublicIpOnLaunch: 'false'
+  igw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - myigw
+  igwAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref igw
+      VpcId: !Ref myvpc
+  routetTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref myvpc
+  routeIGW:
+    Type: AWS::EC2::Route
+    DependsOn: routeTable
+    Properties:
+      RouteTableId: !Ref routeTable
+      GatewayId: !Ref igw
+      DestinationCidrBlock: 0.0.0.0/0
+  subnetAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref routeTable
+      SubnetId: !Ref sub1
+  mysg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref myvpc
+      GroupDescription: my SG for webservers
+      SecurityGroupIngress:
+        - CidrBlock: 0.0.0.0/0
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+        - CidrBlock: 0.0.0.0/0
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+  myec2:
+    Type: AWS::EC2::Instance
+    Properties:
+      VpcId: !Ref myvpc
+      AvailabilityZone: 'Fn::GetAZs: "AWS::Region"'
+      ImageId: ami-0ff8a91507f77f867
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - !GetAtt mysg.GroupId
