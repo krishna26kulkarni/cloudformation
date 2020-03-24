@@ -10,27 +10,23 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref myvpc
-      AvailabilityZone: 'Fn::GetAZs: "AWS::Region"'
-      CidrBlock: 10.0.1.0/16
+      CidrBlock: 10.0.1.0/24
       MapPublicIpOnLaunch: 'true'
   sub2:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref myvpc
-      AvailabilityZone: 'Fn::GetAZs: "AWS::Region"'
-      CidrBlock: 10.0.2.0/16
+      CidrBlock: 10.0.2.0/24
       MapPublicIpOnLaunch: 'false'
   igw:
     Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - myigw
+
   igwAttach:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       InternetGatewayId: !Ref igw
       VpcId: !Ref myvpc
-  routetTable:
+  routeTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref myvpc
@@ -52,19 +48,18 @@ Resources:
       VpcId: !Ref myvpc
       GroupDescription: my SG for webservers
       SecurityGroupIngress:
-        - CidrBlock: 0.0.0.0/0
+        - CidrIp: 0.0.0.0/0
           FromPort: 22
           IpProtocol: tcp
           ToPort: 22
-        - CidrBlock: 0.0.0.0/0
+        - CidrIp: 0.0.0.0/0
           FromPort: 80
           IpProtocol: tcp
           ToPort: 80
   myec2:
     Type: AWS::EC2::Instance
     Properties:
-      VpcId: !Ref myvpc
-      AvailabilityZone: 'Fn::GetAZs: "AWS::Region"'
+      SubnetId: !Ref sub1
       ImageId: ami-0ff8a91507f77f867
       InstanceType: t2.micro
       SecurityGroupIds:
