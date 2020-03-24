@@ -1,18 +1,43 @@
 Resources:
-  myec2:
+  MyInstance:
     Type: AWS::EC2::Instance
     Metadata:
-      Comment: Install Apache server
       AWS::CloudFormation::Init:
         config:
           packages:
             yum:
               httpd: []
+          groups:
+            apache: {}
+          users:
+            "apache":
+              groups:
+                - "apache"
+          sources:
+            "/home/ec2-user/aws-cli": "https://github.com/aws/aws-cli/tarball/master"
           files:
             "/var/www/html/index.html":
-              content: |
-                <html><h1>This webserver is created using cfn-init</h1></html>
+              content: "<html><h1>This webserver is created using cfn-init</h1></html>"
               mode: '000644'
+              owner: apache
+              group: apache
+            "/etc/cfn/cfn-hup.conf":
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+              mode: "000400"
+              owner: "root"
+              group: "root"
+            "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.MyInstance.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource MyInstance --region ${AWS::Region}
+              mode: "000400"
+              owner: "root"
+              group: "root"
           services:
             sysvinit:
               httpd:
