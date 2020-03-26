@@ -1,4 +1,3 @@
-AWSTemplateFormatVersion: 2010-09-09
 Resources:
   myvpc:
     Type: AWS::EC2::VPC
@@ -12,12 +11,14 @@ Resources:
       VpcId: !Ref myvpc
       CidrBlock: 10.0.1.0/24
       MapPublicIpOnLaunch: 'true'
+      AvailabilityZone: us-east-1b
   sub2:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref myvpc
       CidrBlock: 10.0.2.0/24
-      MapPublicIpOnLaunch: 'false'
+      MapPublicIpOnLaunch: 'true'
+      AvailabilityZone: us-east-1a
   igw:
     Type: AWS::EC2::InternetGateway
 
@@ -37,30 +38,153 @@ Resources:
       RouteTableId: !Ref routeTable
       GatewayId: !Ref igw
       DestinationCidrBlock: 0.0.0.0/0
-  subnetAssociation:
+  subnetAssociation1:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref routeTable
       SubnetId: !Ref sub1
+  subnetAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref routeTable
+      SubnetId: !Ref sub2
   mysg:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref myvpc
-      GroupDescription: my SG for webservers
+      GroupDescription: my SG for LoadBalancer
       SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          FromPort: 22
-          IpProtocol: tcp
-          ToPort: 22
         - CidrIp: 0.0.0.0/0
           FromPort: 80
           IpProtocol: tcp
           ToPort: 80
-  myec2:
+  myec2sg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SG for webservers
+      VpcId: !Ref myvpc
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref mysg
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+  myec2one:
     Type: AWS::EC2::Instance
     Properties:
       SubnetId: !Ref sub1
       ImageId: ami-0ff8a91507f77f867
       InstanceType: t2.micro
       SecurityGroupIds:
+        - !GetAtt myec2sg.GroupId
+      UserData:
+           Fn::Base64: !Sub |
+             #!/bin/bash -xe
+             yum -y install httpd
+             echo "<html><h1>This is my test web page in ${AWS::Region}!!</h1></html>" > /var/www/html/index.html
+             service httpd restart
+             chkconfig httpd on
+  myec2two:
+    Type: AWS::EC2::Instance
+    Properties:
+      SubnetId: !Ref sub1
+      ImageId: ami-0ff8a91507f77f867
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - !GetAtt myec2sg.GroupId
+      UserData:
+           Fn::Base64: !Sub |
+             #!/bin/bash -xe
+             yum -y install httpd
+             echo "<html><h1>This is my test web page in ${AWS::Region}!!</h1></html>" > /var/www/html/index.html
+             service httpd restart
+             chkconfig httpd on
+  mytargetgroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref myvpc
+      Name: mytargets
+      HealthCheckEnabled: 'true'
+      HealthCheckIntervalSeconds: 15
+      HealthCheckPath: '/'
+      HealthCheckPort: 80
+      HealthCheckProtocol: 'HTTP'
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 5
+      Targets:
+        - Id: !Ref myec2one
+          Port: 80
+        - Id: !Ref myec2two
+          Port: 80
+      TargetType: 'instance'
+      Port: 80
+      Protocol: 'HTTP'
+  mylb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: myalb
+      Scheme: internet-facing
+      SecurityGroups:
         - !GetAtt mysg.GroupId
+      Subnets:
+        - !Ref sub1
+        - !Ref sub2
+      Type: application
+  myAppListener:
+     Type: AWS::ElasticLoadBalancingV2::Listener
+     Properties:
+       Port: 80
+       Protocol: "HTTP"
+       DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref mytargetgroup
+       LoadBalancerArn: !Ref mylb
+  ListenerRule1:
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref mytargetgroup
+      Conditions:
+        - Field: http-header
+          HttpHeaderConfig:
+            HttpHeaderName: User-Agent
+            Values:
+              - Mozilla
+        - Field: http-header
+          HttpHeaderConfig:
+            HttpHeaderName: Referer
+            Values:
+              - 'https://www.amazon.com/'
+      ListenerArn: !Ref myAppListener
+      Priority: 1
+  ListenerRule2:
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref mytargetgroup
+      Conditions:
+        - Field: http-header
+          HttpHeaderConfig:
+            HttpHeaderName: User-Agent
+            Values:
+              - Chrome
+      ListenerArn: !Ref myAppListener
+      Priority: 2
+  LoadBalancerAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      Namespace: AWS/ApplicationELB
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !Ref mylb
+        - Name: TargetGroup
+          Value: !Ref mytargetgroup
+      MetricName: UnHealthyHostCount
+      Period: 60
+      Statistic: Average
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      EvaluationPeriods: 1
