@@ -1,0 +1,26 @@
+version: 0.2
+run-as: root
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+    commands:
+      - echo "installing git client"
+      - yum -y install git
+      - echo "Downloading cloudformation templates from github"
+  pre_build:
+    commands:
+      - echo "Nothing included in prebuild stage"
+  build:
+    commands:
+      - echo "Installing aws cli"
+      - yum -y install yum-utils
+      - yum -y groupinstall development
+      - yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+      - yum -y install python36u
+      - yum -y install python36u-pip
+      - pip3.6 install --upgrade pip
+      - pip3.6 install --upgrade awscli
+      - aws s3 cp create_s3_bucket.yaml s3://myapp-java-artifacts/ --region us-east-1
+      - aws cloudformation --create-stack --stack-name mys3bucket --template-url https://myapp-java-artifacts.s3.amazonaws.com/create_s3_bucket.yaml --resource-types "AWS::S3::Bucket"
+      
