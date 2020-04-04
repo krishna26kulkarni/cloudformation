@@ -68,36 +68,6 @@ Resources:
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-  myec2one:
-    Type: AWS::EC2::Instance
-    Properties:
-      SubnetId: !Ref sub1
-      ImageId: ami-0ff8a91507f77f867
-      InstanceType: t2.micro
-      SecurityGroupIds:
-        - !GetAtt myec2sg.GroupId
-      UserData:
-           Fn::Base64: !Sub |
-             #!/bin/bash -xe
-             yum -y install httpd
-             echo "<html><h1>This is my test web page in ${AWS::Region}!!</h1></html>" > /var/www/html/index.html
-             service httpd restart
-             chkconfig httpd on
-  myec2two:
-    Type: AWS::EC2::Instance
-    Properties:
-      SubnetId: !Ref sub1
-      ImageId: ami-0ff8a91507f77f867
-      InstanceType: t2.micro
-      SecurityGroupIds:
-        - !GetAtt myec2sg.GroupId
-      UserData:
-           Fn::Base64: !Sub |
-             #!/bin/bash -xe
-             yum -y install httpd
-             echo "<html><h1>This is my test web page in ${AWS::Region}!!</h1></html>" > /var/www/html/index.html
-             service httpd restart
-             chkconfig httpd on
   mytargetgroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -111,11 +81,6 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 5
       UnhealthyThresholdCount: 5
-      Targets:
-        - Id: !Ref myec2one
-          Port: 80
-        - Id: !Ref myec2two
-          Port: 80
       TargetType: 'instance'
       Port: 80
       Protocol: 'HTTP'
@@ -152,11 +117,6 @@ Resources:
             HttpHeaderName: User-Agent
             Values:
               - Mozilla
-        - Field: http-header
-          HttpHeaderConfig:
-            HttpHeaderName: Referer
-            Values:
-              - 'https://www.amazon.com/'
       ListenerArn: !Ref myAppListener
       Priority: 1
   ListenerRule2:
@@ -188,3 +148,42 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       EvaluationPeriods: 1
+  myAsLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      KeyName: office_aws
+      InstanceType: t2.micro
+      ImageId: ami-0ff8a91507f77f867
+      SecurityGroups:
+        - !GetAtt myec2sg.GroupId
+      LaunchConfigurationName: MyAutoScalingLaunchConfig
+      AssociatePublicIpAddress: 'true'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum -y install httpd
+          echo "<html><h1>This is my test web page in ${AWS::Region}!!</h1></html>" > /var/www/html/index.html
+          service httpd restart
+          chkconfig httpd on
+  myAsGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn:
+      - mylb
+      - myAppListener
+      - ListenerRule1
+      - ListenerRule2
+    Properties:
+      AutoScalingGroupName: MyAutoScalingGroup
+      Cooldown: 90
+      DesiredCapacity: 2
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 60
+      TargetGroupARNs:
+        - !Ref mytargetgroup
+      LaunchConfigurationName: !Ref myAsLaunchConfig
+      MaxSize: 4
+      MinSize: 1
+      ServiceLinkedRoleARN: arn:aws:iam::621074076471:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling
+      VPCZoneIdentifier:
+        - !Ref sub1
+        - !Ref sub2
