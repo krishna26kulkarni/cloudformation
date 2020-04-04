@@ -174,7 +174,7 @@ Resources:
       - ListenerRule2
     Properties:
       AutoScalingGroupName: MyAutoScalingGroup
-      Cooldown: 90
+      Cooldown: 92
       DesiredCapacity: 2
       HealthCheckType: ELB
       HealthCheckGracePeriod: 60
