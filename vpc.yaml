@@ -183,7 +183,7 @@ Resources:
       LaunchConfigurationName: !Ref myAsLaunchConfig
       MaxSize: 4
       MinSize: 1
-      ServiceLinkedRoleARN: arn:aws:iam::621074076471:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling
+      ServiceLinkedRoleARN: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy
       VPCZoneIdentifier:
         - !Ref sub1
         - !Ref sub2
