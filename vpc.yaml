@@ -146,7 +146,7 @@ Resources:
       Period: 60
       Statistic: Average
       ComparisonOperator: GreaterThanThreshold
-      Threshold: 0
+      Threshold: 1
       EvaluationPeriods: 1
   myAsLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -187,3 +187,11 @@ Resources:
       VPCZoneIdentifier:
         - !Ref sub1
         - !Ref sub2
+  myAutoScalingPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName: !Ref myAsGroup
+      PolicyType: SimpleScaling
+      Cooldown: 92
+      ScalingAdjustment: 1

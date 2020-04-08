@@ -1,0 +1,50 @@
+Resources:
+  myec2:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+            yum:
+              httpd: []
+            groups:
+              apache: {}
+            users:
+              "apache":
+                groups:
+                  - "apache"
+          files:
+            "/var/www/html/index.html":
+              content: "<html><h1>This is Cloudinit demo</h1></html>"
+              owner: "apache"
+              mode: "0655"
+              group: "apache"
+          services:
+            sysvinit:
+              httpd:
+                enabled: 'true'
+                ensureRunning: 'true'
+    Properties:
+      KeyName: office_aws
+      ImageId: ami-0ff8a91507f77f867
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - !GetAtt sg1.GroupId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource myec2 --region ${AWS::Region}
+  sg1:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: vpc-f33c1b89
+      GroupDescription: web server sg
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
